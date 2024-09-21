@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JScheduler examples</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/monokai.min.css" integrity="sha512-R6PH4vSzF2Yxjdvb2p2FA06yWul+U0PDDav4b/od/oXf9Iw37zl10plvwOXelrjV2Ai7Eo3vyHeyFUjhXdBCVQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="./jscheduler.css" />
+    </head>
+    <body>
+        
+        <div class="container mt-4">
+            
+            <div class="row">
+                <div class="col-3">
+                    <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item">
+                          <a href=".">jScheduler</a>
+                      </li>
+                      <li class="breadcrumb-item active" aria-current="page">
+                          Examples
+                      </li>
+                    </ol>
+                  </nav>
+                </div>
+                <div class="col-9">
+                    <p id="comments" class="text-primary text-center mt-2">
+                        any comments be will displayed here
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row mt-2">
+                <div class="col-3">
+                    <div class="list-group rounded-0" 
+                         data-bind="foreach: rows">
+                        
+                        <!-- ko ifnot: script -->
+                        <div class="list-group-item">
+                            <span class="fw-bold"
+                                  data-bind="text: label"
+                            >
+                            </span>                            
+                        </div>
+                        <!-- /ko -->
+                        
+                        <!-- ko if: script -->
+                        <a class="list-group-item" 
+                           data-bind="attr: { href: url }, css: { 'bg-light': active }"
+                        >
+                            <span class="ps-2" 
+                                  data-bind="text: label"
+                            >
+                            </span>
+                        </a>                        
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="col-9">
+                    
+                    <div id="scheduler">
+                        <p class="text-center">
+                            Select an example at the left of the screen.
+                        </p>
+                    </div>
+                    <h5 data-bind="css: { invisible: !activeRow }" 
+                        class="mt-2 text-secondary invisible"
+                    >
+                        source
+                    </h5>
+                    <div id="source"></div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js" integrity="sha512-2AL/VEauKkZqQU9BHgnv48OhXcJPx9vdzxN1JrKDVc4FPU/MEE/BZ6d9l0mP7VmvLsjtYwqiYQpDskK9dG8KBA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js" integrity="sha512-I6CdJdruzGtvDyvdO4YsiAq+pkWf2efgd1ZUSK2FnM/u2VuRASPC7GowWQrWyjxCZn6CT89s3ddGI+be0Ak9Fg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="./examples.js"></script>
+        <script src="./jscheduler.js"></script>
+        <script>
+            
+            const viewModel = examples.buildModel([
+                ['Week view',                '',],
+                ['Init scheduler',           'week_view-init_scheduler'],
+                ["Displaying events",        "week_view-displaying_events"],
+                ["Loading events with ajax", "week_view-loading_events_ajax"],
+                ['Click on events',          'week_view-clickable_events'],
+                ["Drag and drop events",     'week_view-dragndrop_events'],
+                ['Resize events',            'week_view-resizable_events'],
+                ["Custom headers",           "week_view-custom_headers"],
+                ["Custom hours range",       "week_view-custom_hours_range"],
+                ['Month view',               ''],
+                ["Init scheduler",           "month_view-init_scheduler"],
+                ["Displaying events",        "month_view-displaying_events"],
+                ["Loading events with ajax", "month_view-loading_events_ajax"],
+                ["Drag and drop events",     "month_view-dragndrop_events"]
+            ]);
+            ko.applyBindings(viewModel);
+            
+            if (viewModel.activeRow) {
+                var script = document.createElement("script");
+                script.src = './examples/' + viewModel.activeRow.script + '.js';
+                document.body.appendChild(script);
+                
+                CodeMirror(document.querySelector('#source'), {
+                    lineNumbers: true,
+                    tabSize: 2,
+                    value: viewModel.activeRow.source.trim() + "\n",
+                    mode: 'javascript',
+                    theme: 'monokai'
+                });
+                
+            }
+            
+        </script>
+        
+        
+    </body>
+</html>

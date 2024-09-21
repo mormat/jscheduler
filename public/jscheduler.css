@@ -1,0 +1,68 @@
+.jscheduler {
+    font: caption;
+}
+
+.jscheduler-day_view-header {
+    margin-bottom: 5px;
+    border-collapse: collapse;
+}
+
+.jscheduler-day_view-header th {
+    text-align: center;
+}
+
+.jscheduler-day_view-body {
+    border: 1px solid #d3d3d3;
+    border-collapse: collapse;
+}
+
+.jscheduler-day_view-body th {
+    color: rgba(0,0,0,.54);
+    text-align: center;
+    font-size: .9em;
+}
+
+.jscheduler-day_view-body td {
+    border-left: 1px solid #d3d3d3;
+}
+
+.jscheduler-event-day {
+    padding: 3px;
+}
+
+.jscheduler-event-timeline {
+    padding-left: 3px;
+}
+
+.jscheduler-vsep {
+    border-top: 1px dashed #d3d3d3;
+}
+
+.jscheduler-month_view {
+    border-collapse: collapse;
+}
+
+.jscheduler-month_view th {
+    text-align: center;
+    padding-bottom: 5px;
+}
+
+.jscheduler-month_view td {
+    border: 1px solid #d3d3d3;
+}
+
+.jscheduler-month_view-numday-inactive {
+    opacity: 0.5;
+}
+
+.jscheduler-hsep {
+    border-left: 1px dashed #d3d3d3;
+}
+
+.jscheduler-draggable {
+    cursor: move;
+}
+
+.jscheduler-resize-handler {
+    cursor: ns-resize;
+}
