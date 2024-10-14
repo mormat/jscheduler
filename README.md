@@ -101,11 +101,11 @@ This `eventScheduler` object will contain the data required for the scheduler su
 - `end`:   ending   date of the event
 - `label`: displayed label
 
-But there is also an `originalEvent` prop that contains all the data you have initially provided when settings the events.
-For instance : if you have initially provided an `id` attribute coming from a database, you can retrieve this value from `originalEvent` like this.
+Use the `values` prop to retrieve all the others data that you have initially provided when setting the events.
+For instance : if you have initially provided an `id` attribute coming from a database, you can retrieve this value like this.
 ```js
     onEventClick: function(schedulerEvent) {
-        var id = schedulerEvent.originalEvent.my_custom_id;
+        var id = schedulerEvent.values.my_custom_id;
     }
 ```
 
@@ -217,14 +217,6 @@ Enable resizing of scheduler events.
 Displays or not the headers of the scheduler. Default is `true`.
 
 ## Methods
-
-### `setEvents`( `events`: array )
-
-Refresh the events displayed in the scheduler. 
-
-Can be used when events have been loaded from an ajax request.
-
-The `events` parameters must be compatible with the [events](#events-array) options.
 
 ### `setOptions`( `options`: array )
 

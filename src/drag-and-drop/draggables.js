@@ -43,10 +43,10 @@ class TimelineDraggable extends AbstractDraggable {
     #currentValue;
     #onChange;
 
-    constructor(value, onChange)
+    constructor(schedulerEvent, onChange)
     {
         super();
-        this.#initialValue = value;
+        this.#initialValue = schedulerEvent;
         this.#onChange = onChange;
     }
 
@@ -79,14 +79,17 @@ class TimelineDraggable extends AbstractDraggable {
         );
         const end = start.getTime() + this.#initialValue.length;
         
-        this.#currentValue = this.#currentValue.withDateRange(
-            { start, end }
-        );
+        this.#currentValue = this.#currentValue.cloneWith( { start, end } );
         
     }
 
     drop() {
-        this.#onChange(this.#currentValue, this.#initialValue);        
+        
+        const { start, end } = this.#currentValue;
+        const valuesBefore = this.#initialValue.values;
+        this.#initialValue.update({ ...valuesBefore, start, end });
+        this.#onChange(this.#initialValue, valuesBefore);
+        
     }
 
 }
@@ -155,7 +158,7 @@ class MoveEventDraggable extends AbstractDraggable {
             startTime = constraint.end.getTime() - this.#initialValue.length;
         }
         
-        this.#currentValue = this.#currentValue.withDateRange({
+        this.#currentValue = this.#currentValue.cloneWith({
             start: startTime,
             end:   startTime + this.#initialValue.length
         });
@@ -164,8 +167,11 @@ class MoveEventDraggable extends AbstractDraggable {
 
     drop() {
         
-        this.#onChange(this.#currentValue, this.#initialValue);
-
+        const { start, end } = this.#currentValue;
+        const valuesBefore = this.#initialValue.values;
+        this.#initialValue.update({ ...valuesBefore, start, end });
+        this.#onChange(this.#initialValue, valuesBefore);
+        
     }
 
 }
@@ -237,7 +243,7 @@ class ResizeEventDraggable extends AbstractDraggable {
             endTime = this.#initialValue.start.getTime() + 15 * 60 * 1000;
         }
 
-        this.#currentValue = this.#currentValue.withDateRange({
+        this.#currentValue = this.#currentValue.cloneWith({
             start: this.#currentValue.start,
             end:   endTime
         });
@@ -246,8 +252,11 @@ class ResizeEventDraggable extends AbstractDraggable {
 
     drop() {
         
-        this.#onChange(this.#currentValue, this.#initialValue);
-
+        const { start, end } = this.#currentValue;
+        const valuesBefore = this.#initialValue.values;
+        this.#initialValue.update({ ...valuesBefore, start, end });
+        this.#onChange(this.#initialValue, valuesBefore);
+        
     }
 
 }

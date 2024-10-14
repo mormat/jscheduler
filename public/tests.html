@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div id="scheduler"></div>
+    <script src="./jscheduler.js"></script>
+    <script>
+      var element = document.getElementById('scheduler');
+
+      var options = {
+          events: [
+            { start: "2024-09-15 10:00", label: "interview" },
+            { start: "2024-09-17 14:00", label: "meeting" }
+          ]
+      }
+      
+      var url = new URL(window.location.href);
+      url.searchParams.forEach(function(v, k) {
+          var keys = k.split('__');
+          if (keys[0] === 'scheduler') {
+              options[ keys[1] ] = v;
+          }
+      });
+
+      jscheduler.render(element, options);
+    </script>
+  </body>
+</html>

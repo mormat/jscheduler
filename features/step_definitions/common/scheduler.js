@@ -28,3 +28,4 @@ Then('the scheduler should be in month view', async function () {
     await this.getElement('.jscheduler-month_view');
     
 });
+

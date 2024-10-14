@@ -4,6 +4,7 @@
  */
 
 const { Scheduler } = require('./component');
+const { format_date } = require('./utils/date');
 
 function render(element, eventsOrSettings)
 {
@@ -20,4 +21,6 @@ function render(element, eventsOrSettings)
     
 }
 
-module.exports = { render }
+const utils = { format_date }
+
+module.exports = { render, utils }

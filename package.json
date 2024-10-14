@@ -26,6 +26,7 @@
     "/dist/*.js",
     "/dist/*.css",
     "/docs",
+    "features/step_definitions/common",
     "README.md"
   ],
   "devDependencies": {

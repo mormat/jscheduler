@@ -11,8 +11,8 @@ url = './examples/events.json' +
     '?start=' + dateRange.start.getTime() + 
     '&end='  + dateRange.end.getTime();
 
-$.get(url, function( events ) {
-    scheduler.setEvents( events );
+$.get(url, function( data ) {
+    scheduler.setOptions( { events: data } );
 });
 
 document.getElementById('comments').innerHTML = "loading '" + url + "'";

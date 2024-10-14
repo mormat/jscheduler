@@ -38,7 +38,7 @@ function DaysView( { schedulerSettings, schedulerState } ) {
         const { day, dateRange, widthPercent, eventDroppableTarget } = column;
 
         const groupedEvents = groupDateRangedItemsByPosition(
-            schedulerSettings.events.filter(e => dateRange.contains(e))
+            schedulerState.events.filter(e => dateRange.contains(e))
         );
 
         const style = [
@@ -218,7 +218,7 @@ function DaysView( { schedulerSettings, schedulerState } ) {
                 day + ` ${ schedulerSettings.maxHour + 1 }:00:00`
             );
     
-            const events = schedulerSettings.events.filter(e => dateRange.contains(e));
+            const events = schedulerState.events.filter(e => dateRange.contains(e));
             
             return { 
                 day, dateRange, events,
@@ -229,7 +229,7 @@ function DaysView( { schedulerSettings, schedulerState } ) {
         });
         
         const timelineRow = {
-            events:     schedulerSettings.events.filter( function( otherEvent ) {
+            events:     schedulerState.events.filter( function( otherEvent ) {
                 const filter = c => c.events.includes( otherEvent );
                 return (columns.findIndex( filter ) === -1);
             }),   

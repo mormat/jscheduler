@@ -25,9 +25,7 @@
                   </nav>
                 </div>
                 <div class="col-9">
-                    <p id="comments" class="text-primary text-center mt-2">
-                        any comments be will displayed here
-                    </p>
+                    
                 </div>
             </div>
             
@@ -59,13 +57,12 @@
                 </div>
                 <div class="col-9">
                     
-                    <div id="scheduler">
-                        <p class="text-center">
-                            Select an example at the left of the screen.
-                        </p>
-                    </div>
+                    <div id="scheduler"></div>
+                    <p id="comments" class="text-muted text-center">
+                        &nbsp;
+                    </p>
                     <h5 data-bind="css: { invisible: !activeRow }" 
-                        class="mt-2 text-secondary invisible"
+                        class="text-secondary invisible"
                     >
                         source
                     </h5>
@@ -98,7 +95,11 @@
                 ["Init scheduler",           "month_view-init_scheduler"],
                 ["Displaying events",        "month_view-displaying_events"],
                 ["Loading events with ajax", "month_view-loading_events_ajax"],
-                ["Drag and drop events",     "month_view-dragndrop_events"]
+                ["Drag and drop events",     "month_view-dragndrop_events"],
+                ['CRUD operations',          ,''],
+                ["Creating an event",        "crud-creating_event"],
+                ["Updating an event",        "crud-updating_event"],
+                ["Deleting an event",        "crud-deleting_event"],
             ]);
             ko.applyBindings(viewModel);
             

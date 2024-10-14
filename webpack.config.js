@@ -31,7 +31,7 @@ module.exports = function (env, argv) {
                         from: './public', 
                         to: '.',  
                         globOptions: {
-                            ignore: ['**/temp']
+                            ignore: ['**/temp', '**/tests.html']
                         }
                     },
                 ]

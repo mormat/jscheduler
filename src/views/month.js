@@ -25,7 +25,7 @@ function MonthView( { schedulerSettings, schedulerState } ) {
     
     function renderTimelineRow( row ) {
     
-        const { events } = schedulerSettings;
+        const { events } = schedulerState;
         
         const view = new TimelineView( { schedulerSettings } );
     

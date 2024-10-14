@@ -5,27 +5,20 @@ let lastId = 0;
 
 class SchedulerEvent {
     
-    #originalEvent;
     #id;
-    #start;
-    #end;
-    #label;
-    #bgColor;
-    #color; 
+    #values = {};
+    #options = {};
+    #deleted = false;
     
-    static fromOriginalEvent( originalEvent ) {
-        const id = lastId++;
-        return new SchedulerEvent( { ...originalEvent, id, originalEvent } );
+    constructor( values, options ) {
+        this.#id      = options.id || lastId++;
+        this.#values  = values || {};
+        this.#options = options || {};
+        this.init();
     }
     
-    constructor( { id, start, end, label, bgColor, color, originalEvent }) {
-        this.#originalEvent = originalEvent;
-        this.#id    = id;
-        this.#start = new Date(start);
-        this.#end   = new Date(end ? end : date_add_hour(start, 2));
-        this.#label = label;
-        this.#bgColor = bgColor || '#0288d1';
-        this.#color = color || 'white';
+    get values() {
+        return this.#values;
     }
     
     get id() {
@@ -33,56 +26,82 @@ class SchedulerEvent {
     }
     
     get start() {
-        return this.#start;
+        return this.#values['start'];
     }
     
     get end() {
-        return this.#end;
+        return this.#values['end'];
     }
     
     get label() {
-        return this.#label;
+        return this.#values['label'];
     }
     
     get color() {
-        return this.#color;
+        return this.#values['color'];
     }
     
-    get originalEvent() {
-        return this.#originalEvent;
+    get bgColor() {
+        return this.#values['bgColor'];
     }
     
     get length() {
         return this.end.getTime() - this.start.getTime();
     }
     
+    get deleted() {
+        return this.#deleted;
+    }
+    
     get styles() {
         const styles = {
-            'color': this.#color,
+            'color': this.color,
         }
-        if (!bootstrapColors.includes(this.#bgColor)) {
-            styles['background-color'] = this.#bgColor;
+        if (!bootstrapColors.includes(this.bgColor)) {
+            styles['background-color'] = this.bgColor;
         }
         return styles;
     }
     
     get className() {
-        if (bootstrapColors.includes(this.#bgColor)) {
-            return 'bg-' + this.#bgColor;
+        if (bootstrapColors.includes(this.bgColor)) {
+            return 'bg-' + this.bgColor;
         }
         return '';
     }
     
-    withDateRange( { start, end } ) {
+    // clone the current instance with a new Date Range
+    cloneWith( newValues ) {
         const id            = this.#id;
-        const originalEvent = this.#originalEvent;
-        const label         = this.#label;
-        const bgColor       = this.#bgColor;
-        const color         = this.#color;
         
         return new SchedulerEvent( 
-            { id, originalEvent, label, start, end, bgColor, color }
+            { ...this.values, ...newValues },
+            this.#options
         );
+    }
+    
+    update( values ) {
+        this.#values = values;
+        this.init();
+        
+        this.#options.onUpdate( this );
+    }
+    
+    delete() {
+        this.#deleted = true;
+        
+        this.#options.onUpdate( this );
+    }
+    
+    init() {
+        
+        const start = new Date(this.#values.start);
+        const end   = new Date(this.#values.end ? this.#values.end : date_add_hour(start, 2));
+        
+        const defaults = { bgColor: '#0288d1', color: 'white' };
+        this.#values = { ...defaults, ...this.#values, start, end }
+        
+        this.#options = { onUpdate: () => {}, ...this.#options };
     }
     
 }

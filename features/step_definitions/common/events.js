@@ -1,12 +1,15 @@
 const { Given, When, Then } = require('@cucumber/cucumber');
-const { After } = require('@cucumber/cucumber');
+const { Before, After, BeforeStep } = require('@cucumber/cucumber');
 const { expect }  = require('expect');
 const css2xpath   = require('css2xpath');
+
+const debugRects = {}
+const currentStep = {}
 
 When('I click on the {string} event', async function (eventName) {
     
     const element = await this.getElement(
-        `.jscheduler-event:contains("${eventName}") a`
+        getEventSelector(eventName) + ' a'
     );
     
     await element.click();
@@ -23,7 +26,7 @@ Then(
         
         const expectedRect = await getDayRangeRect(this, fromDate, toDate);
         
-        this.debugRects[this.currentStepText] = expectedRect;
+        debugRects[currentStep.text] = expectedRect;
         
         const actualRect = await eventElement.getRect();
                 
@@ -35,18 +38,28 @@ Then(
     }
 );
 
+Then('the {string} event should not be displayed', async function (eventName) {
+    
+    const elements = await this.findElements(
+        getEventSelector(eventName)            
+    );
+    
+    expect(elements.length).toBe(0);
+    
+});
+
 Then(
     'the {string} event should be displayed at {string} from {string} to {string}', 
     async function (eventName, atDate, fromHour, toHour) {
     
         const eventElement = await this.getElement(
-            `.jscheduler-event:contains("${eventName}"")`
+            getEventSelector(eventName)            
         );
        
         const expectedRect  = await getDayRect(this, atDate);
         expectedRect.y      = await getHourTop(this, fromHour);
         expectedRect.height = await getHourTop(this, toHour) - expectedRect.y;
-        this.debugRects[this.currentStepText] = expectedRect;
+        debugRects[currentStep.text] = expectedRect;
         
         const eventRect = await eventElement.getRect();
         
@@ -63,7 +76,7 @@ When(
     async function (eventName, toDate, atHour) {
 
         const eventElement = await this.getElement(
-            `.jscheduler-event:contains("${eventName}"")`
+            getEventSelector(eventName)
         );
 
         const eventRect  = await eventElement.getRect();
@@ -82,8 +95,8 @@ When(
             color: 'red'
         };
         
-        this.debugRects[this.currentStepText + ' (fromPoint)'] = fromPoint;
-        this.debugRects[this.currentStepText + ' (toPoint)'] = toPoint;
+        debugRects[currentStep.text + ' (fromPoint)'] = fromPoint;
+        debugRects[currentStep.text + ' (toPoint)'] = toPoint;
         
         await this.dragAndDrop(fromPoint, toPoint);
 
@@ -112,8 +125,8 @@ When(
             y: targetRect.y + targetRect.height / 2,
             color: 'red'
         };
-        this.debugRects[this.currentStepText + '(fromPoint)'] = fromPoint;
-        this.debugRects[this.currentStepText + '(toPoint)']   = toPoint;
+        debugRects[currentStep.text + '(fromPoint)'] = fromPoint;
+        debugRects[currentStep.text + '(toPoint)']   = toPoint;
         
         await this.dragAndDrop(fromPoint, toPoint);
         
@@ -132,39 +145,33 @@ When('I resize the {string} event to {string}', async function (eventName, toHou
         x: eventRect.x + eventRect.width / 2,
         y: eventRect.y + eventRect.height - 8
     }
-    this.debugRects[this.currentStepText + '(fromPoint)'] = fromPoint;
+    debugRects[currentStep.text + '(fromPoint)'] = fromPoint;
     
     const toPoint = {
         x: fromPoint.x,
         y: (await getHourTop(this, toHour)) + 4,
     }
-    this.debugRects[this.currentStepText + '(toPoint)'] = toPoint;
+    debugRects[currentStep.text + '(toPoint)'] = toPoint;
     
     await this.dragAndDrop(fromPoint, toPoint);
     
 });
 
-Then(
-    'the events should be loaded from {string} to {string}', 
-    async function (fromDate, toDate) {
-
-        const expectedText = 'events.json' +
-            '?start=' + (new Date(fromDate)).getTime() +
-            '&end='+ (new Date(toDate)).getTime()
-
-        const pageText = await this.getPageText();
-
-        expect(pageText).toContain(expectedText);
-
+Before(function() {
+    for (const key in debugRects) {
+        delete debugRects[key];
     }
-);
+});
 
+BeforeStep(function({ pickleStep }) {
+    currentStep.text = pickleStep.text;
+});
 
 // render some specifics rects on the page for debugging
 After(function() {
-    for (const k in this.debugRects) {
+    for (const k in debugRects) {
         
-        const {x, y, width = 1, height = 1, color = 'blue'} = this.debugRects[k];
+        const {x, y, width = 1, height = 1, color = 'blue'} = debugRects[k];
         
         const styles = [
             'position: absolute',
@@ -210,31 +217,31 @@ async function getHourTop(self, atHour) {
     const element = await self.getElement(
         `[data-hour]:contains('${atHour}')`
     );
-    
+
     const { y } = await element.getRect();
     return y;
 }
 
 async function getDayRect(self, atDay) {
-    
+
     const dayHeaderElement = await self.getElement(
         `.jscheduler-day-header:contains('${atDay}')`
     );
-    
+
     const bodyElement = await self.getElement(
         `.jscheduler-day_view-body`
     );
-    
+
     const { x, width }  = await dayHeaderElement.getRect();
     const { y, height } = await bodyElement.getRect();
-    
+
     return { x, y, width, height }
-    
+
 }
 
 
 async function getDayRangeRect(self, fromDate, toDate) {
-    
+
     const selectors = {
         'fromDate': `.jscheduler-daterange-header:contains('${fromDate}')`,
         'toDate':   `.jscheduler-daterange-header:contains('${toDate}')`,
@@ -245,7 +252,7 @@ async function getDayRangeRect(self, fromDate, toDate) {
         '.jscheduler-daterange' + 
         Object.values(selectors).map(s => `:has(${s})`).join('')
     );
-    
+
     const rects = {};
     for (const key in selectors) {
         const node = await self.getElement(selectors[key], parent);
@@ -258,5 +265,5 @@ async function getDayRangeRect(self, fromDate, toDate) {
         y:      rects['row'].y,
         height: rects['row'].height
     }
-    
+
 }

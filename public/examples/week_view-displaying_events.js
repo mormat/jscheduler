@@ -20,6 +20,8 @@ jscheduler.render(element, {
             label: "training course",
             start: "2024-08-15 09:00",
             end  : "2024-08-17 18:00",
-        }
+        },
+        // the invalid values below should be ignored,
+        null, {}, { start: 'invalid date' }
     ]
 });

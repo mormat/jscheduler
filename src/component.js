@@ -2,9 +2,10 @@ const { DaysView }  = require('./views/days');
 const { MonthView } = require('./views/month');
 const { TimelineView } = require('./views/timeline');
 const { Day, DateRange } = require('./utils/date.js');
-const { appendClass } = require('./utils/dom');
+const { build_html_style } = require('./utils/html');
 
 const { SchedulerEvent } = require('./models/SchedulerEvent');
+const { SchedulerState } = require('./models/SchedulerState');
 
 const { createDragAndDropObserver } = require('./drag-and-drop/observers');
 
@@ -24,15 +25,12 @@ function Scheduler( element, eventsOrSettings ) {
         headersVisible: true,
         onEventDrop: () => {},
         onEventResize: () => {},
+        styles: {'min-height': '480px'},
     }
     
     const schedulerSettings = {...defaultSettings, ...eventsOrSettings};
-    
-    schedulerSettings.events = schedulerSettings.events.map(e => SchedulerEvent.fromOriginalEvent(e));
-    
-    const schedulerState = {
-        currentDate: getDefaultDate( schedulerSettings ),
-    };
+         
+    const schedulerState = new SchedulerState( schedulerSettings )
     
     const views = {
         'days' : new DaysView( { schedulerSettings, schedulerState } ),
@@ -42,7 +40,10 @@ function Scheduler( element, eventsOrSettings ) {
      
     function refresh() {
         
+        schedulerSettings.events = schedulerSettings.events.map(cleanEvent);
+        
         const currentDay = new Day(schedulerState.currentDate);
+        let  html = '';
         
         if (schedulerSettings.viewMode === 'day') {
             
@@ -51,7 +52,7 @@ function Scheduler( element, eventsOrSettings ) {
                 currentDay + ' 23:59:59.999',
             );
             
-            element.innerHTML = views['days'];
+            html = views['days'];
         }
         
         if (schedulerSettings.viewMode === 'week') {
@@ -65,7 +66,7 @@ function Scheduler( element, eventsOrSettings ) {
                 currentDay.getLastDayOfWeek()  + ' 23:59:59.999',
             );
 
-            element.innerHTML = views['days'];
+            html = views['days'];
         }
         
         if (schedulerSettings.viewMode === 'month') {
@@ -75,19 +76,20 @@ function Scheduler( element, eventsOrSettings ) {
                 currentDay.getLastDayOfMonth()  + ' 23:59:59.999',
             );
             
-            element.innerHTML = views['month'];
+            html = views['month'];
         }
         
+        const styles = build_html_style({
+            ...schedulerSettings.styles,
+            'display': 'flex',
+            'flex-flow': 'column'
+        });
+        
+        element.innerHTML = `<div class="jscheduler" style="${styles}">${html}</div>`;
         
     }
     
     this.init = function( ) {
-        
-        element.style['min-height'] = '480px';
-        element.style['display']    = 'flex';
-        element.style['flex-flow']  = 'column';
-        
-        appendClass(element, 'jscheduler');
         
         refresh();
          
@@ -139,7 +141,7 @@ function Scheduler( element, eventsOrSettings ) {
             const draggable = createDraggable(
                 'resize_event', 
                 {
-                    onChange: createEventDropListener('onEventResize'),
+                    onChange: schedulerSettings.onEventResize,
                     schedulerEvent 
                 }
             );
@@ -171,7 +173,7 @@ function Scheduler( element, eventsOrSettings ) {
                     'move_event_timeline' : 
                     'move_event_day',
                 { 
-                    onChange: createEventDropListener('onEventDrop'),
+                    onChange: schedulerSettings.onEventDrop,
                     schedulerEvent 
                 }
             );
@@ -185,22 +187,18 @@ function Scheduler( element, eventsOrSettings ) {
         }
         
     }
-    
-    this.getViewMode = function() {
-        return schedulerSettings.viewMode;
-    }
-    
+        
     this.setOptions = ( options ) => {
+        
         for (const [name, value] of Object.entries(options) ) {
             schedulerSettings[name] = value;
         }
+        
         refresh();
     }
     
-    this.setEvents = function(events) {
-        schedulerSettings.events = events.map(e => SchedulerEvent.fromOriginalEvent(e));
-        refresh();
-    }
+    // @todo add doc and test
+    this.getOption = (name) => schedulerSettings[name];
         
     this.next = function() {
         
@@ -218,9 +216,8 @@ function Scheduler( element, eventsOrSettings ) {
             day = day.addMonths(1);
         }
         
-        schedulerState.currentDate = day.getDate();
+        this.setOptions( { currentDate: day.getDate() })
         
-        refresh();
     }
     
     this.previous = function() {
@@ -235,25 +232,25 @@ function Scheduler( element, eventsOrSettings ) {
             day = day.addDays(-7);
         }
         
-        
-        
         if (schedulerSettings.viewMode === 'month') {
             day = day.addMonths(-1);
             
         }
         
-        schedulerState.currentDate = day.getDate();
-        
-        refresh();
-        
+        this.setOptions( { currentDate: day.getDate() })
+                
     }
     
     this.today = function() {
         
-        schedulerState.currentDate = new Date( Date.now() );
+        this.setOptions( { currentDate: Date.now() })
         
-        refresh();
-        
+    }
+    
+    this.createEvent = () => {
+        const newEvent = cleanEvent({});
+        schedulerSettings.events.push(newEvent);
+        return newEvent;
     }
     
     this.getDateRange = function() {
@@ -271,22 +268,7 @@ function Scheduler( element, eventsOrSettings ) {
         }
         
     }
-        
-    function createEventDropListener(listenerName) {
-        
-        return (currentValue) => {
-        
-            schedulerSettings[listenerName](currentValue);
-
-            schedulerSettings.events = schedulerSettings.events.map( e => {
-                return e.id === currentValue.id ? currentValue : e;
-            });
-
-            refresh();
-        }
-
-    }
-    
+            
     this.getLabel = ( locale = 'en' ) => {
         
         if (!schedulerState.dateRange) {
@@ -333,6 +315,22 @@ function Scheduler( element, eventsOrSettings ) {
         
     }
     
+    function cleanEvent(raw) {
+        
+        if (raw instanceof SchedulerEvent) {
+            return raw;
+        }
+        
+        const onUpdate = () => {
+            const { events } = schedulerSettings;
+            schedulerSettings.events = events.filter(o => !o.deleted);
+            refresh();
+        }
+        
+        return new SchedulerEvent(raw, { onUpdate });
+        
+    }
+    
 }
 
 function matchSelector(e, selector) {
@@ -343,20 +341,6 @@ function matchSelector(e, selector) {
         }
     }
     
-}
-
-function getDefaultDate( { events, currentDate } ) {
-    if ( currentDate ) {
-        return new Date( currentDate );
-    }
-    
-    const dates = events.map(e => new Date(e.start));
-
-    if (dates.length) {
-        return Math.min( ...dates.map( d => d.getTime() ) );
-    }
-
-    return Date.now();
 }
 
 module.exports = { Scheduler }

@@ -20,14 +20,15 @@ Feature: examples page
         Then the 'interview' event should be displayed at "2024-08-13" from '10:00' to '12:00'
         And the 'meeting' event should be displayed at "2024-08-15" from '14:00' to '18:00'
         And the "training course" event should be displayed from "2024-08-15" to "2024-08-17"
+        And I should not see "undefined"
 
     @ajax
     Scenario: Week view - Loading events with ajax
         When I open the "examples" page
         And I select the "Loading events with ajax" example in "Week view"
         And I wait until I see "meeting"
-        Then the 'meeting' event should be displayed at "2024-08-15" from '14:00' to '18:00'
-        And the events should be loaded from "2024-08-12 00:00:00.000" to "2024-08-18 23:59:59.999"
+        Then the 'meeting' event should be displayed at "2024-08-15" from '14:00' to '16:00'
+        And "./examples/events.json" should be loaded from "2024-08-12 00:00:00.000" to "2024-08-18 23:59:59.999"
 
     Scenario: Week view - Custom headers
         When I open the "examples" page
@@ -94,6 +95,7 @@ Feature: examples page
         Then the "training course" event should be displayed from "1" to "2"
         And the "presentation (1)" event should be displayed from "5" to "6"
         And the "presentation (2)" event should be displayed from "7" to "8"
+        And I should not see "undefined"
 
     @ajax
     Scenario: Month view - Loading events with ajax
@@ -101,7 +103,7 @@ Feature: examples page
         And I select the "Loading events with ajax" example in "Month view"
         And I wait until I see "meeting"
         Then the 'meeting' event should be displayed from "15" to "15"
-        And the events should be loaded from "2024-07-29 00:00:00.000" to "2024-09-01 23:59:59.999"
+        And "./examples/events.json" should be loaded from "2024-07-29 00:00:00.000" to "2024-09-01 23:59:59.999"
 
     @drag_and_drop
     Scenario: Month view - Drag and drop events
@@ -112,3 +114,24 @@ Feature: examples page
         When I drag the "presentation" event to "12"
         Then the "presentation (1)" event should be displayed from "12" to "13"
         And the "presentation (2)" event should be displayed from "14" to "15"
+
+    @crud
+    Scenario: CRUD operations - Creating an event
+        When I open the "examples" page
+        And I select the "Creating an event" example in "CRUD operations"
+        Then the "meeting" event should be displayed at "2024-09-17" from "10:00" to "12:00"
+
+    @crud
+    Scenario: CRUD operations - Updating an event
+        When I open the "examples" page
+        And I select the "Updating an event" example in "CRUD operations"
+        And I click on the "meeting" event
+        Then the "meeting" event should not be displayed
+        And the "interview" event should be displayed at "2024-09-17" from "14:00" to "16:00"
+
+    @crud
+    Scenario: CRUD operations - Deleting an event
+        When I open the "examples" page
+        And I select the "Deleting an event" example in "CRUD operations"
+        And I click on the "meeting" event
+        Then the "meeting" event should not be displayed
